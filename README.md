@@ -8,25 +8,25 @@
 >
 > For licensing information, visit https://velobpa.com/licensing or contact licensing@velobpa.com.
 
-An n8n community node for integrating with dYdX DEX, the leading decentralized derivatives exchange. Access 11+ resources including trading operations, market data, and portfolio management with comprehensive support for perpetual futures trading, order management, and real-time position tracking.
+An n8n community node for integrating with dYdX DEX, the leading decentralized exchange for perpetual trading. This node provides 7 resources with comprehensive trading, account management, and market data capabilities for automated DeFi trading workflows.
 
 ![n8n Community Node](https://img.shields.io/badge/n8n-Community%20Node-blue)
 ![License](https://img.shields.io/badge/license-BSL--1.1-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
-![dYdX DEX](https://img.shields.io/badge/dYdX-DEX-purple)
 ![DeFi](https://img.shields.io/badge/DeFi-Trading-green)
-![Perpetuals](https://img.shields.io/badge/Perpetual-Futures-orange)
+![dYdX](https://img.shields.io/badge/dYdX-DEX-purple)
+![Perpetuals](https://img.shields.io/badge/Perpetuals-Futures-orange)
 
 ## Features
 
-- **Complete Trading Operations** - Execute orders, manage positions, and monitor fills across all dYdX perpetual markets
-- **Real-time Market Data** - Access live orderbook, trades, candles, and comprehensive market information
-- **Portfolio Management** - Track account balances, positions, transfers, and historical P&L performance
-- **Rewards Integration** - Monitor trading rewards and liquidity provider incentives
-- **Advanced Analytics** - Historical data analysis with candles, fills, and performance metrics
-- **Secure Authentication** - API key-based authentication with comprehensive error handling
-- **WebSocket Support** - Real-time data streaming for live market monitoring
-- **Risk Management** - Position tracking and P&L monitoring for effective risk control
+- **Market Data Access** - Retrieve real-time market data, orderbook depth, and trading statistics
+- **Order Management** - Create, modify, cancel, and track perpetual futures orders
+- **Position Tracking** - Monitor open positions, PnL, and margin requirements
+- **Account Operations** - Manage account balances, equity, and trading permissions  
+- **Transfer Functions** - Handle deposits, withdrawals, and cross-margin transfers
+- **Funding Operations** - Track funding rates and payment history for perpetual contracts
+- **API Key Management** - Secure credential handling with proper authentication
+- **Rate Limiting** - Built-in request throttling to respect dYdX API limits
 
 ## Installation
 
@@ -61,163 +61,118 @@ n8n start
 
 | Field | Description | Required |
 |-------|-------------|----------|
-| API Key | Your dYdX API key from account settings | Yes |
-| API Secret | Your dYdX API secret for request signing | Yes |
-| API Passphrase | Your dYdX API passphrase | Yes |
+| API Key | Your dYdX API key from the dashboard | Yes |
+| API Secret | Your dYdX API secret for signing requests | Yes |
+| Passphrase | Your dYdX API passphrase | Yes |
 | Stark Private Key | Your Stark private key for Layer 2 operations | Yes |
-| Environment | Trading environment (mainnet/testnet) | Yes |
-| Account Number | Your dYdX account number | No |
+| Environment | API environment (mainnet/testnet) | Yes |
 
 ## Resources & Operations
 
-### 1. Accounts
+### 1. Market
 
 | Operation | Description |
 |-----------|-------------|
-| Get Account | Retrieve account information and balances |
-| List Accounts | Get all accounts for the authenticated user |
-| Update Account | Modify account settings and preferences |
-
-### 2. Orders
-
-| Operation | Description |
-|-----------|-------------|
-| Create Order | Place a new order on dYdX |
-| Get Order | Retrieve details of a specific order |
-| List Orders | Get all orders with optional filtering |
-| Cancel Order | Cancel an existing order |
-| Cancel All Orders | Cancel all open orders for a market |
-| Update Order | Modify an existing order |
-
-### 3. Positions
-
-| Operation | Description |
-|-----------|-------------|
-| Get Position | Retrieve details of a specific position |
-| List Positions | Get all current positions |
-| Close Position | Close an existing position |
-| Update Position | Modify position parameters |
-
-### 4. Fills
-
-| Operation | Description |
-|-----------|-------------|
-| Get Fill | Retrieve details of a specific fill |
-| List Fills | Get all fills with filtering options |
-| Export Fills | Export fill data for accounting |
-
-### 5. Transfers
-
-| Operation | Description |
-|-----------|-------------|
-| Get Transfer | Retrieve details of a specific transfer |
-| List Transfers | Get all transfers with filtering |
-| Create Deposit | Initiate a deposit to dYdX |
-| Create Withdrawal | Request a withdrawal from dYdX |
-| Get Deposit Address | Retrieve deposit address for assets |
-
-### 6. Markets
-
-| Operation | Description |
-|-----------|-------------|
-| Get Market | Retrieve details of a specific market |
-| List Markets | Get all available markets |
-| Get Market Stats | Retrieve 24h statistics for markets |
-| Get Market Status | Check market operational status |
-
-### 7. Candles
-
-| Operation | Description |
-|-----------|-------------|
+| Get Markets | Retrieve all available trading markets |
+| Get Market | Get details for a specific market |
+| Get Orderbook | Fetch current orderbook for a market |
+| Get Trades | Get recent trades for a market |
 | Get Candles | Retrieve OHLCV candle data |
-| List Historical Candles | Get historical candle data with time ranges |
-| Get Latest Candle | Retrieve the most recent candle |
+| Get Stats | Get 24h trading statistics |
 
-### 8. Trades
-
-| Operation | Description |
-|-----------|-------------|
-| Get Trade | Retrieve details of a specific trade |
-| List Trades | Get recent trades for a market |
-| Get Trade History | Retrieve historical trade data |
-
-### 9. Orderbook
+### 2. Order
 
 | Operation | Description |
 |-----------|-------------|
-| Get Orderbook | Retrieve current orderbook snapshot |
-| Get Level 2 Data | Get aggregated orderbook levels |
-| Get Best Bid Ask | Retrieve top of book prices |
+| Create Order | Place a new perpetual futures order |
+| Cancel Order | Cancel an existing order |
+| Cancel All Orders | Cancel all open orders |
+| Get Order | Retrieve details of a specific order |
+| Get Orders | List all orders with filters |
+| Get Order History | Fetch historical order data |
 
-### 10. HistoricalPnl
-
-| Operation | Description |
-|-----------|-------------|
-| Get Historical PnL | Retrieve historical profit and loss data |
-| List PnL Records | Get PnL records with date filtering |
-| Get Daily PnL | Retrieve daily PnL summaries |
-| Export PnL Data | Export PnL data for analysis |
-
-### 11. TradingRewards
+### 3. Position
 
 | Operation | Description |
 |-----------|-------------|
-| Get Trading Rewards | Retrieve current trading rewards |
-| List Reward History | Get historical trading rewards |
-| Get Reward Summary | Retrieve reward summaries by period |
+| Get Positions | List all open positions |
+| Get Position | Get details for a specific position |
+| Close Position | Close an open position |
+| Adjust Margin | Add or remove margin from position |
+| Get Position History | Retrieve historical position data |
 
-### 12. LiquidityProviderRewards
+### 4. Account
 
 | Operation | Description |
 |-----------|-------------|
-| Get LP Rewards | Retrieve liquidity provider rewards |
-| List LP History | Get historical LP reward data |
-| Get LP Stats | Retrieve LP performance statistics |
+| Get Account | Fetch account information and balances |
+| Update Account | Modify account settings |
+| Get Equity | Retrieve current account equity |
+| Get Balances | Get all asset balances |
+| Get Trading Rewards | Fetch trading reward history |
+
+### 5. Transfer
+
+| Operation | Description |
+|-----------|-------------|
+| Create Transfer | Initiate a deposit or withdrawal |
+| Get Transfers | List transfer history |
+| Get Transfer | Get details of a specific transfer |
+| Fast Withdraw | Execute fast withdrawal to Layer 1 |
+
+### 6. Funding
+
+| Operation | Description |
+|-----------|-------------|
+| Get Funding Rates | Retrieve current funding rates |
+| Get Funding History | Fetch historical funding payments |
+| Get Funding Payments | Get funding payments for positions |
+
+### 7. ApiKey
+
+| Operation | Description |
+|-----------|-------------|
+| Get API Keys | List all API keys for account |
+| Create API Key | Generate new API key |
+| Delete API Key | Remove an existing API key |
 
 ## Usage Examples
 
 ```javascript
-// Create a new order
+// Get market data for BTC-USD perpetual
 {
   "market": "BTC-USD",
-  "side": "BUY", 
+  "operation": "getMarket"
+}
+```
+
+```javascript
+// Place a long order for 0.1 BTC
+{
+  "market": "BTC-USD", 
+  "side": "BUY",
   "type": "LIMIT",
-  "size": "0.01",
+  "size": "0.1",
   "price": "45000",
-  "timeInForce": "GTT",
-  "postOnly": true,
+  "timeInForce": "GTC",
+  "postOnly": false,
   "reduceOnly": false
 }
 ```
 
 ```javascript
-// Get account positions
+// Check current positions
 {
-  "market": "ETH-USD",
-  "status": "OPEN",
-  "limit": 100,
-  "createdBeforeOrAt": "2024-01-01T00:00:00.000Z"
-}
-```
-
-```javascript
-// Retrieve market candles
-{
+  "operation": "getPositions",
   "market": "BTC-USD",
-  "resolution": "1HOUR",
-  "fromISO": "2024-01-01T00:00:00.000Z",
-  "toISO": "2024-01-02T00:00:00.000Z",
-  "limit": 100
+  "status": "OPEN"
 }
 ```
 
 ```javascript
-// Get trading rewards
+// Get account balances
 {
-  "epoch": 150,
-  "epochCredits": true,
-  "aggregatePeriods": ["DAILY", "WEEKLY"],
-  "limit": 50
+  "operation": "getBalances"
 }
 ```
 
@@ -225,12 +180,12 @@ n8n start
 
 | Error | Description | Solution |
 |-------|-------------|----------|
-| Invalid API Key | Authentication failed with provided credentials | Verify API key, secret, and passphrase in credentials |
-| Insufficient Balance | Account lacks sufficient balance for operation | Check account balance and reduce order size |
-| Market Closed | Attempting to trade on inactive market | Verify market status and trading hours |
-| Position Not Found | Requested position does not exist | Confirm position exists and market symbol is correct |
-| Rate Limit Exceeded | Too many API requests in time window | Implement request throttling and retry logic |
-| Invalid Order Parameters | Order parameters violate market rules | Check minimum order size, price increments, and market rules |
+| Invalid API Key | Authentication failed with provided credentials | Verify API key, secret, and passphrase are correct |
+| Insufficient Balance | Not enough collateral for the requested operation | Check account balance and reduce order size |
+| Market Closed | Attempting to trade when market is offline | Wait for market to reopen or check market status |
+| Rate Limit Exceeded | Too many requests sent to API | Implement delays between requests and respect rate limits |
+| Invalid Order Size | Order size doesn't meet minimum requirements | Check market minimums and adjust order size |
+| Position Not Found | Requested position doesn't exist | Verify position exists and market symbol is correct |
 
 ## Development
 
@@ -275,5 +230,5 @@ Contributions are welcome! Please ensure:
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-dydx-dex/issues)
-- **dYdX API Documentation**: [dYdX API Docs](https://docs.dydx.exchange/)
-- **dYdX Community**: [dYdX Discord](https://discord.gg/dydx)
+- **dYdX API Documentation**: [docs.dydx.exchange](https://docs.dydx.exchange/)
+- **dYdX Community**: [dYdX Discord](https://discord.com/invite/Tuze6tY)
