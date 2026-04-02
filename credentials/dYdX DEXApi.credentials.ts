@@ -4,17 +4,16 @@ import {
 } from 'n8n-workflow';
 
 export class dYdXDEXApi implements ICredentialType {
-	name = 'dYdXDEXApi';
+	name = 'dydxDexApi';
 	displayName = 'dYdX DEX API';
 	documentationUrl = 'https://docs.dydx.exchange/';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Base URL',
-			name: 'apiBaseUrl',
+			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.dydx.exchange/v3',
-			required: true,
-			description: 'The base URL for the dYdX API',
+			default: 'https://api.dydx.exchange',
+			description: 'Base URL for dYdX API',
 		},
 		{
 			displayName: 'API Key',
@@ -22,26 +21,38 @@ export class dYdXDEXApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			required: true,
-			description: 'The API key for authentication (DYDX-API-KEY header)',
+			description: 'API Key from dYdX account',
 		},
 		{
-			displayName: 'API Secret',
-			name: 'apiSecret',
+			displayName: 'Secret',
+			name: 'secret',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			required: true,
-			description: 'The API secret for signing requests',
+			description: 'Secret from dYdX account',
 		},
 		{
-			displayName: 'API Passphrase',
-			name: 'apiPassphrase',
+			displayName: 'Passphrase',
+			name: 'passphrase',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			required: true,
-			description: 'The API passphrase (DYDX-PASSPHRASE header)',
+			description: 'Passphrase from dYdX account',
+		},
+		{
+			displayName: 'STARK Private Key',
+			name: 'starkPrivateKey',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			description: 'STARK private key for signing private endpoint requests',
+		},
+		{
+			displayName: 'Ethereum Address',
+			name: 'ethereumAddress',
+			type: 'string',
+			default: '',
+			description: 'Ethereum address associated with dYdX account',
 		},
 	];
 }
