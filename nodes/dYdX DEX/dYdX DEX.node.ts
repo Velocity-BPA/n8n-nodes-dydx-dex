@@ -98,6 +98,34 @@ export class dYdXDEX implements INodeType {
           {
             name: 'LiquidityProviderRewards',
             value: 'liquidityProviderRewards',
+          },
+          {
+            name: 'Market',
+            value: 'market',
+          },
+          {
+            name: 'Order',
+            value: 'order',
+          },
+          {
+            name: 'Position',
+            value: 'position',
+          },
+          {
+            name: 'Account',
+            value: 'account',
+          },
+          {
+            name: 'Transfer',
+            value: 'transfer',
+          },
+          {
+            name: 'Funding',
+            value: 'funding',
+          },
+          {
+            name: 'ApiKey',
+            value: 'apiKey',
           }
         ],
         default: 'accounts',
@@ -432,6 +460,164 @@ export class dYdXDEX implements INodeType {
     },
   ],
   default: 'getLiquidityProviderRewards',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['market'] } },
+  options: [
+    { name: 'Get Markets', value: 'getMarkets', description: 'Get all available markets', action: 'Get all markets' },
+    { name: 'Get Market', value: 'getMarket', description: 'Get specific market information', action: 'Get specific market' },
+    { name: 'Get Orderbook', value: 'getOrderbook', description: 'Get order book for market', action: 'Get market orderbook' },
+    { name: 'Get Trades', value: 'getTrades', description: 'Get recent trades for market', action: 'Get market trades' },
+    { name: 'Get Historical Funding', value: 'getHistoricalFunding', description: 'Get historical funding rates', action: 'Get historical funding rates' },
+    { name: 'Get Candles', value: 'getCandles', description: 'Get OHLCV candlestick data', action: 'Get candlestick data' }
+  ],
+  default: 'getMarkets',
+},
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+		},
+	},
+	options: [
+		{
+			name: 'Create Order',
+			value: 'createOrder',
+			description: 'Create a new order',
+			action: 'Create order',
+		},
+		{
+			name: 'Get Orders',
+			value: 'getOrders',
+			description: 'Get all orders for account',
+			action: 'Get orders',
+		},
+		{
+			name: 'Get Order',
+			value: 'getOrder',
+			description: 'Get specific order by ID',
+			action: 'Get order',
+		},
+		{
+			name: 'Cancel Order',
+			value: 'cancelOrder',
+			description: 'Cancel specific order',
+			action: 'Cancel order',
+		},
+		{
+			name: 'Cancel All Orders',
+			value: 'cancelAllOrders',
+			description: 'Cancel all orders',
+			action: 'Cancel all orders',
+		},
+	],
+	default: 'createOrder',
+},
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['position'],
+		},
+	},
+	options: [
+		{
+			name: 'Get All Positions',
+			value: 'getPositions',
+			description: 'Get all positions for account',
+			action: 'Get all positions',
+		},
+		{
+			name: 'Get Position',
+			value: 'getPosition',
+			description: 'Get specific position by ID',
+			action: 'Get a position',
+		},
+		{
+			name: 'Get Historical PnL',
+			value: 'getHistoricalPnl',
+			description: 'Get historical profit and loss',
+			action: 'Get historical profit and loss',
+		},
+	],
+	default: 'getPositions',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['account'] } },
+  options: [
+    { name: 'Get Account', value: 'getAccount', description: 'Get account information by Ethereum address', action: 'Get account information' },
+    { name: 'Get User', value: 'getUser', description: 'Get user profile information', action: 'Get user profile information' },
+    { name: 'Update User', value: 'updateUser', description: 'Update user profile', action: 'Update user profile' },
+    { name: 'Update Email Notifications', value: 'updateEmailNotifications', description: 'Update email notification preferences', action: 'Update email notification preferences' }
+  ],
+  default: 'getAccount',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['transfer'] } },
+  options: [
+    { name: 'Get Transfers', value: 'getTransfers', description: 'Get transfer history', action: 'Get transfer history' },
+    { name: 'Create Withdrawal', value: 'createWithdrawal', description: 'Create withdrawal request', action: 'Create withdrawal request' },
+    { name: 'Get Withdrawals', value: 'getWithdrawals', description: 'Get withdrawal history', action: 'Get withdrawal history' },
+  ],
+  default: 'getTransfers',
+},
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['funding'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Funding Payments',
+			value: 'getFundingPayments',
+			description: 'Get funding payment history',
+			action: 'Get funding payments',
+		},
+		{
+			name: 'Get Historical Funding Rates',
+			value: 'getHistoricalFundingRates',
+			description: 'Get historical funding rates for a market',
+			action: 'Get historical funding rates',
+		},
+	],
+	default: 'getFundingPayments',
+},
+{
+  displayName: 'Operation',
+  name: 'operation',
+  type: 'options',
+  noDataExpression: true,
+  displayOptions: { show: { resource: ['apiKey'] } },
+  options: [
+    { name: 'Create API Key', value: 'createApiKey', description: 'Create new API key', action: 'Create API key' },
+    { name: 'Get API Keys', value: 'getApiKeys', description: 'Get all API keys for account', action: 'Get API keys' },
+    { name: 'Delete API Key', value: 'deleteApiKey', description: 'Delete API key', action: 'Delete API key' }
+  ],
+  default: 'createApiKey',
 },
       // Parameter definitions
 {
@@ -1365,1375 +1551,696 @@ export class dYdXDEX implements INodeType {
   default: 0,
   description: 'The epoch number for which to retrieve rewards',
 },
-    ],
-  };
-
-  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    const items = this.getInputData();
-    const resource = this.getNodeParameter('resource', 0) as string;
-
-    switch (resource) {
-      case 'accounts':
-        return [await executeAccountsOperations.call(this, items)];
-      case 'orders':
-        return [await executeOrdersOperations.call(this, items)];
-      case 'positions':
-        return [await executePositionsOperations.call(this, items)];
-      case 'fills':
-        return [await executeFillsOperations.call(this, items)];
-      case 'transfers':
-        return [await executeTransfersOperations.call(this, items)];
-      case 'markets':
-        return [await executeMarketsOperations.call(this, items)];
-      case 'candles':
-        return [await executeCandlesOperations.call(this, items)];
-      case 'trades':
-        return [await executeTradesOperations.call(this, items)];
-      case 'orderbook':
-        return [await executeOrderbookOperations.call(this, items)];
-      case 'historicalPnl':
-        return [await executeHistoricalPnlOperations.call(this, items)];
-      case 'tradingRewards':
-        return [await executeTradingRewardsOperations.call(this, items)];
-      case 'liquidityProviderRewards':
-        return [await executeLiquidityProviderRewardsOperations.call(this, items)];
-      default:
-        throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported`);
+{
+  displayName: 'Market',
+  name: 'market',
+  type: 'string',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getMarket', 'getOrderbook', 'getTrades', 'getHistoricalFunding', 'getCandles']
     }
-  }
-}
-
-// ============================================================
-// Resource Handler Functions
-// ============================================================
-
-function createHmacSignature(secret: string, message: string): string {
-  return crypto.createHmac('sha256', secret).update(message).digest('hex');
-}
-
-function createISOTimestamp(): string {
-  return new Date().toISOString();
-}
-
-function createSignedHeaders(credentials: any, method: string, requestPath: string, body?: string): any {
-  const timestamp = createISOTimestamp();
-  const bodyString = body || '';
-  const message = timestamp + method + requestPath + bodyString;
-  const signature = createHmacSignature(credentials.secretKey, message);
-  
-  return {
-    'DYDX-API-KEY': credentials.apiKey,
-    'DYDX-SIGNATURE': signature,
-    'DYDX-TIMESTAMP': timestamp,
-    'DYDX-PASSPHRASE': credentials.passphrase,
-    'Content-Type': 'application/json',
-  };
-}
-
-async function executeAccountsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-  const baseUrl = credentials.baseUrl || 'https://api.dydx.exchange/v3';
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      
-      switch (operation) {
-        case 'getAccount': {
-          const ethereumAddress = this.getNodeParameter('ethereumAddress', i) as string;
-          const requestPath = `/accounts?ethereumAddress=${ethereumAddress}`;
-          
-          const options: any = {
-            method: 'GET',
-            url: baseUrl + requestPath,
-            headers: createSignedHeaders(credentials, 'GET', requestPath),
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getAccountById': {
-          const accountId = this.getNodeParameter('accountId', i) as string;
-          const requestPath = `/accounts/${accountId}`;
-          
-          const options: any = {
-            method: 'GET',
-            url: baseUrl + requestPath,
-            headers: createSignedHeaders(credentials, 'GET', requestPath),
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'updateAccount': {
-          const accountId = this.getNodeParameter('accountId', i) as string;
-          const updateData = this.getNodeParameter('updateData', i) as any;
-          const requestPath = `/accounts/${accountId}`;
-          const bodyString = JSON.stringify(updateData);
-          
-          const options: any = {
-            method: 'PUT',
-            url: baseUrl + requestPath,
-            headers: createSignedHeaders(credentials, 'PUT', requestPath, bodyString),
-            body: updateData,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ json: result, pairedItem: { item: i } });
-      
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        }
-        throw new NodeOperationError(this.getNode(), error.message);
-      }
+  },
+  default: '',
+  placeholder: 'BTC-USD',
+  description: 'The market symbol (e.g., BTC-USD)'
+},
+{
+  displayName: 'Limit',
+  name: 'limit',
+  type: 'number',
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getTrades', 'getCandles']
     }
-  }
-  
-  return returnData;
-}
-
-function createSignature(secret: string, timestamp: string, method: string, requestPath: string, body: string): string {
-  const message = timestamp + method + requestPath + body;
-  return createHmac('sha256', secret).update(message).digest('base64');
-}
-
-function createHeaders(credentials: any, method: string, requestPath: string, body: string = ''): any {
-  const timestamp = new Date().toISOString();
-  const signature = createSignature(credentials.secret, timestamp, method, requestPath, body);
-  
-  return {
-    'DYDX-API-KEY': credentials.apiKey,
-    'DYDX-SIGNATURE': signature,
-    'DYDX-TIMESTAMP': timestamp,
-    'DYDX-PASSPHRASE': credentials.passphrase,
-    'Content-Type': 'application/json',
-  };
-}
-
-async function executeOrdersOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      
-      switch (operation) {
-        case 'createOrder': {
-          const market = this.getNodeParameter('market', i) as string;
-          const side = this.getNodeParameter('side', i) as string;
-          const type = this.getNodeParameter('type', i) as string;
-          const size = this.getNodeParameter('size', i) as string;
-          const price = this.getNodeParameter('price', i, '') as string;
-          const timeInForce = this.getNodeParameter('timeInForce', i, 'GTC') as string;
-          
-          const body: any = {
-            market,
-            side,
-            type,
-            size,
-            timeInForce,
-          };
-          
-          if (price && (type === 'LIMIT' || type === 'STOP_LIMIT')) {
-            body.price = price;
-          }
-          
-          const bodyString = JSON.stringify(body);
-          const requestPath = '/v3/orders';
-          const headers = createHeaders(credentials, 'POST', requestPath, bodyString);
-          
-          const options: any = {
-            method: 'POST',
-            url: credentials.baseUrl + requestPath,
-            headers,
-            body: bodyString,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getAllOrders': {
-          const market = this.getNodeParameter('market', i, '') as string;
-          const status = this.getNodeParameter('status', i, '') as string;
-          const side = this.getNodeParameter('side', i, '') as string;
-          const type = this.getNodeParameter('type', i, '') as string;
-          const limit = this.getNodeParameter('limit', i, 100) as number;
-          
-          const queryParams = new URLSearchParams();
-          if (market) queryParams.append('market', market);
-          if (status) queryParams.append('status', status);
-          if (side) queryParams.append('side', side);
-          if (type) queryParams.append('type', type);
-          if (limit) queryParams.append('limit', limit.toString());
-          
-          const requestPath = '/v3/orders' + (queryParams.toString() ? '?' + queryParams.toString() : '');
-          const headers = createHeaders(credentials, 'GET', requestPath);
-          
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + requestPath,
-            headers,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getOrder': {
-          const orderId = this.getNodeParameter('orderId', i) as string;
-          const requestPath = `/v3/orders/${orderId}`;
-          const headers = createHeaders(credentials, 'GET', requestPath);
-          
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + requestPath,
-            headers,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'cancelOrder': {
-          const orderId = this.getNodeParameter('orderId', i) as string;
-          const requestPath = `/v3/orders/${orderId}`;
-          const headers = createHeaders(credentials, 'DELETE', requestPath);
-          
-          const options: any = {
-            method: 'DELETE',
-            url: credentials.baseUrl + requestPath,
-            headers,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'cancelAllOrders': {
-          const market = this.getNodeParameter('market', i, '') as string;
-          
-          const queryParams = new URLSearchParams();
-          if (market) queryParams.append('market', market);
-          
-          const requestPath = '/v3/orders' + (queryParams.toString() ? '?' + queryParams.toString() : '');
-          const headers = createHeaders(credentials, 'DELETE', requestPath);
-          
-          const options: any = {
-            method: 'DELETE',
-            url: credentials.baseUrl + requestPath,
-            headers,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ json: result, pairedItem: { item: i } });
-      
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
+  },
+  default: 100,
+  description: 'Maximum number of results to return'
+},
+{
+  displayName: 'Effective Before Or At',
+  name: 'effectiveBeforeOrAt',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getHistoricalFunding']
     }
-  }
-  
-  return returnData;
-}
-
-function createSignature(message: string, secret: string): string {
-  return crypto.createHmac('sha256', secret).update(message).digest('hex');
-}
-
-function createTimestamp(): string {
-  return new Date().toISOString();
-}
-
-async function executePositionsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = createTimestamp();
-      
-      switch (operation) {
-        case 'getAllPositions': {
-          const market = this.getNodeParameter('market', i, '') as string;
-          const status = this.getNodeParameter('status', i, 'OPEN') as string;
-          
-          let url = `${credentials.baseUrl}/positions`;
-          const queryParams: string[] = [];
-          
-          if (market) {
-            queryParams.push(`market=${encodeURIComponent(market)}`);
-          }
-          if (status) {
-            queryParams.push(`status=${encodeURIComponent(status)}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += '?' + queryParams.join('&');
-          }
-          
-          const message = timestamp + 'GET' + '/v3/positions' + (queryParams.length > 0 ? '?' + queryParams.join('&') : '');
-          const signature = createSignature(message, credentials.apiSecret);
-          
-          const options: any = {
-            method: 'GET',
-            url: url,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getPosition': {
-          const positionId = this.getNodeParameter('positionId', i) as string;
-          const market = this.getNodeParameter('market', i, '') as string;
-          
-          let url = `${credentials.baseUrl}/positions/${positionId}`;
-          const queryParams: string[] = [];
-          
-          if (market) {
-            queryParams.push(`market=${encodeURIComponent(market)}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += '?' + queryParams.join('&');
-          }
-          
-          const message = timestamp + 'GET' + `/v3/positions/${positionId}` + (queryParams.length > 0 ? '?' + queryParams.join('&') : '');
-          const signature = createSignature(message, credentials.apiSecret);
-          
-          const options: any = {
-            method: 'GET',
-            url: url,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'closePosition': {
-          const market = this.getNodeParameter('market', i) as string;
-          const requestId = this.getNodeParameter('requestId', i, '') as string;
-          
-          const body: any = {
-            market: market,
-          };
-          
-          if (requestId) {
-            body.requestId = requestId;
-          }
-          
-          const bodyString = JSON.stringify(body);
-          const message = timestamp + 'POST' + '/v3/positions/close' + bodyString;
-          const signature = createSignature(message, credentials.apiSecret);
-          
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/positions/close`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'Content-Type': 'application/json',
-            },
-            body: body,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
+  },
+  default: '',
+  placeholder: '2023-01-01T00:00:00.000Z',
+  description: 'ISO timestamp to get funding rates before or at this time'
+},
+{
+  displayName: 'Resolution',
+  name: 'resolution',
+  type: 'options',
+  options: [
+    { name: '1 Minute', value: '1MIN' },
+    { name: '5 Minutes', value: '5MINS' },
+    { name: '15 Minutes', value: '15MINS' },
+    { name: '30 Minutes', value: '30MINS' },
+    { name: '1 Hour', value: '1HOUR' },
+    { name: '4 Hours', value: '4HOURS' },
+    { name: '1 Day', value: '1DAY' }
+  ],
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getCandles']
     }
-  }
-  
-  return returnData;
-}
-
-function createSignature(secret: string, method: string, path: string, body: string, timestamp: string): string {
-  const message = timestamp + method + path + body;
-  return createHmac('sha256', secret).update(message).digest('hex');
-}
-
-async function executeFillsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'getAllFills': {
-          const market = this.getNodeParameter('market', i) as string;
-          const orderId = this.getNodeParameter('orderId', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          const createdBeforeOrAt = this.getNodeParameter('createdBeforeOrAt', i) as string;
-
-          const queryParams: any = {};
-          if (market) queryParams.market = market;
-          if (orderId) queryParams.orderId = orderId;
-          if (limit) queryParams.limit = limit.toString();
-          if (createdBeforeOrAt) queryParams.createdBeforeOrAt = new Date(createdBeforeOrAt).toISOString();
-
-          const queryString = new URLSearchParams(queryParams).toString();
-          const path = '/v3/fills' + (queryString ? `?${queryString}` : '');
-          const timestamp = Date.now().toString();
-          const signature = createSignature(credentials.secret, 'GET', path, '', timestamp);
-
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + path,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getFill': {
-          const fillId = this.getNodeParameter('fillId', i) as string;
-          const path = `/v3/fills/${fillId}`;
-          const timestamp = Date.now().toString();
-          const signature = createSignature(credentials.secret, 'GET', path, '', timestamp);
-
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + path,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        }
-        throw new NodeOperationError(this.getNode(), error.message);
-      }
+  },
+  default: '1HOUR',
+  description: 'The time resolution for candle data'
+},
+{
+  displayName: 'From ISO',
+  name: 'fromISO',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getCandles']
     }
-  }
-
-  return returnData;
-}
-
-async function executeTransfersOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  function createSignature(
-    timestamp: string,
-    method: string,
-    requestPath: string,
-    body: string = '',
-  ): string {
-    const message = timestamp + method + requestPath + body;
-    return crypto
-      .createHmac('sha256', credentials.privateKey)
-      .update(message)
-      .digest('hex');
-  }
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = new Date().toISOString();
-
-      switch (operation) {
-        case 'createTransfer': {
-          const type = this.getNodeParameter('type', i) as string;
-          const amount = this.getNodeParameter('amount', i) as string;
-          const asset = this.getNodeParameter('asset', i) as string;
-
-          const requestPath = '/v3/transfers';
-          const body = JSON.stringify({
-            type,
-            amount,
-            asset,
-          });
-
-          const signature = createSignature(timestamp, 'POST', requestPath, body);
-
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}${requestPath}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAllTransfers': {
-          const typeFilter = this.getNodeParameter('type', i, '') as string;
-          const limit = this.getNodeParameter('limit', i, 100) as number;
-          const createdBeforeOrAt = this.getNodeParameter('createdBeforeOrAt', i, '') as string;
-
-          const queryParams = new URLSearchParams();
-          if (typeFilter) queryParams.append('type', typeFilter);
-          if (limit) queryParams.append('limit', limit.toString());
-          if (createdBeforeOrAt) queryParams.append('createdBeforeOrAt', createdBeforeOrAt);
-
-          const requestPath = `/v3/transfers${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-          const signature = createSignature(timestamp, 'GET', requestPath);
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}${requestPath}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getTransfer': {
-          const transferId = this.getNodeParameter('transferId', i) as string;
-
-          const requestPath = `/v3/transfers/${transferId}`;
-          const signature = createSignature(timestamp, 'GET', requestPath);
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}${requestPath}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ json: { error: error.message }, pairedItem: { item: i } });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
+  },
+  default: '',
+  placeholder: '2023-01-01T00:00:00.000Z',
+  description: 'ISO timestamp for the start of the candle data range'
+},
+{
+  displayName: 'To ISO',
+  name: 'toISO',
+  type: 'string',
+  displayOptions: {
+    show: {
+      resource: ['market'],
+      operation: ['getCandles']
     }
-  }
-
-  return returnData;
-}
-
-function createDydxSignature(secret: string, timestamp: string, method: string, requestPath: string, body: string = ''): string {
-  const crypto = require('crypto');
-  const message = timestamp + method + requestPath + body;
-  return crypto.createHmac('sha256', secret).update(message).digest('hex');
-}
-
-async function executeMarketsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = new Date().toISOString();
-      
-      switch (operation) {
-        case 'getAllMarkets': {
-          const requestPath = '/v3/markets';
-          const signature = createDydxSignature(
-            credentials.apiSecret,
-            timestamp,
-            'GET',
-            requestPath
-          );
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.dydx.exchange'}${requestPath}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getMarket': {
-          const market = this.getNodeParameter('market', i) as string;
-          const requestPath = `/v3/markets/${market}`;
-          const signature = createDydxSignature(
-            credentials.apiSecret,
-            timestamp,
-            'GET',
-            requestPath
-          );
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.dydx.exchange'}${requestPath}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        } else {
-          throw new NodeOperationError(this.getNode(), error.message);
-        }
-      }
-    }
-  }
-  
-  return returnData;
-}
-
-function createSignature(secret: string, timestamp: string, method: string, requestPath: string, body: string = ''): string {
-  const message = timestamp + method.toUpperCase() + requestPath + body;
-  return crypto.createHmac('sha256', secret).update(message).digest('base64');
-}
-
-async function executeCandlesOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'getCandles': {
-          const market = this.getNodeParameter('market', i) as string;
-          const resolution = this.getNodeParameter('resolution', i) as string;
-          const fromISO = this.getNodeParameter('fromISO', i) as string;
-          const toISO = this.getNodeParameter('toISO', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-
-          // Build query parameters
-          const queryParams: any = {
-            resolution,
-          };
-
-          if (fromISO) {
-            queryParams.fromISO = new Date(fromISO).toISOString();
-          }
-
-          if (toISO) {
-            queryParams.toISO = new Date(toISO).toISOString();
-          }
-
-          if (limit) {
-            queryParams.limit = limit.toString();
-          }
-
-          const queryString = new URLSearchParams(queryParams).toString();
-          const requestPath = `/v3/candles/${market}${queryString ? '?' + queryString : ''}`;
-          
-          // Create signature for authentication
-          const timestamp = Date.now().toString();
-          const signature = createSignature(
-            credentials.secret,
-            timestamp,
-            'GET',
-            requestPath
-          );
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}${requestPath}`,
-            headers: {
-              'DYDX-SIGNATURE': signature,
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(
-            this.getNode(),
-            `Unknown operation: ${operation}`,
-            { itemIndex: i }
-          );
-      }
-
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error, { itemIndex: i });
-      }
-    }
-  }
-
-  return returnData;
-}
-
-async function executeTradesOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      switch (operation) {
-        case 'getMarketTrades': {
-          const market = this.getNodeParameter('market', i) as string;
-          const limit = this.getNodeParameter('limit', i, 100) as number;
-          const startingBeforeOrAt = this.getNodeParameter('startingBeforeOrAt', i, '') as string;
-
-          const queryParams: any = {
-            limit: limit.toString(),
-          };
-
-          if (startingBeforeOrAt) {
-            queryParams.startingBeforeOrAt = startingBeforeOrAt;
-          }
-
-          const queryString = new URLSearchParams(queryParams).toString();
-          const endpoint = `/v3/trades/${market}`;
-          const url = `${credentials.baseUrl}${endpoint}?${queryString}`;
-
-          // Create request signature for authentication
-          const timestamp = new Date().toISOString();
-          const method = 'GET';
-          const requestPath = `${endpoint}?${queryString}`;
-          const body = '';
-          
-          const message = timestamp + method + requestPath + body;
-          const signature = crypto
-            .createHmac('sha256', credentials.secret)
-            .update(message)
-            .digest('base64');
-
-          const options: any = {
-            method: 'GET',
-            url: url,
-            headers: {
-              'DYDX-SIGNATURE': signature,
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ 
-        json: result,
-        pairedItem: { item: i }
-      });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message },
-          pairedItem: { item: i }
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        } else {
-          throw new NodeOperationError(this.getNode(), error.message);
-        }
-      }
-    }
-  }
-  
-  return returnData;
-}
-
-function signRequest(method: string, path: string, body: string, timestamp: string, apiSecret: string): string {
-  const message = timestamp + method + path + body;
-  return crypto.createHmac('sha256', apiSecret).update(message).digest('hex');
-}
-
-async function executeOrderbookOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'getOrderbook': {
-          const market = this.getNodeParameter('market', i) as string;
-          
-          if (!market) {
-            throw new NodeOperationError(this.getNode(), 'Market parameter is required');
-          }
-
-          const timestamp = new Date().toISOString();
-          const path = `/v3/orderbook/${market}`;
-          const method = 'GET';
-          const body = '';
-
-          const signature = signRequest(method, path, body, timestamp, credentials.apiSecret);
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl || 'https://api.dydx.exchange'}/v3/orderbook/${market}`,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-SIGNATURE': signature,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          
-          if (!result.orderbook) {
-            throw new NodeApiError(this.getNode(), {
-              message: 'Invalid response format from dYdX API',
-              description: 'Expected orderbook data in response',
-            } as any);
-          }
-
-          break;
-        }
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        }
-        throw new NodeOperationError(this.getNode(), error.message);
-      }
-    }
-  }
-
-  return returnData;
-}
-
-async function executeHistoricalPnlOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  function signRequest(method: string, path: string, body: string, timestamp: string): string {
-    const message = timestamp + method + path + body;
-    return createHmac('sha256', credentials.privateKey)
-      .update(message)
-      .digest('hex');
-  }
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = new Date().toISOString();
-
-      switch (operation) {
-        case 'getAllHistoricalPnl': {
-          const createdBeforeOrAt = this.getNodeParameter('createdBeforeOrAt', i) as string;
-          const createdOnOrAfter = this.getNodeParameter('createdOnOrAfter', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-
-          const queryParams: any = {};
-          if (createdBeforeOrAt) queryParams.createdBeforeOrAt = createdBeforeOrAt;
-          if (createdOnOrAfter) queryParams.createdOnOrAfter = createdOnOrAfter;
-          if (limit) queryParams.limit = limit.toString();
-
-          const queryString = Object.keys(queryParams).length > 0 
-            ? '?' + new URLSearchParams(queryParams).toString() 
-            : '';
-          const path = `/v3/historical-pnl${queryString}`;
-
-          const signature = signRequest('GET', path, '', timestamp);
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}${path}`,
-            headers: {
-              'DYDX-SIGNATURE': signature,
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getHistoricalPnl': {
-          const id = this.getNodeParameter('id', i) as string;
-          const path = `/v3/historical-pnl/${id}`;
-
-          const signature = signRequest('GET', path, '', timestamp);
-
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}${path}`,
-            headers: {
-              'DYDX-SIGNATURE': signature,
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ 
-        json: result,
-        pairedItem: { item: i }
-      });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i }
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        } else {
-          throw new NodeOperationError(this.getNode(), error.message);
-        }
-      }
-    }
-  }
-
-  return returnData;
-}
-
-function createHmacSignature(secret: string, method: string, path: string, timestamp: string, body?: string): string {
-  const message = timestamp + method + path + (body || '');
-  return crypto.createHmac('sha256', secret).update(message).digest('hex');
-}
-
-async function executeTradingRewardsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = new Date().toISOString();
-      
-      switch (operation) {
-        case 'getTradingRewards': {
-          const epoch = this.getNodeParameter('epoch', i) as number;
-          let path = '/v3/rewards/weight';
-          
-          if (epoch) {
-            path += `?epoch=${epoch}`;
-          }
-
-          const signature = createHmacSignature(
-            credentials.apiSecret,
-            'GET',
-            path,
-            timestamp
-          );
-
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + path,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getTradingRewardsByAddress': {
-          const address = this.getNodeParameter('address', i) as string;
-          const epoch = this.getNodeParameter('epoch', i) as number;
-          let path = `/v3/rewards/weight/${address}`;
-          
-          if (epoch) {
-            path += `?epoch=${epoch}`;
-          }
-
-          const signature = createHmacSignature(
-            credentials.apiSecret,
-            'GET',
-            path,
-            timestamp
-          );
-
-          const options: any = {
-            method: 'GET',
-            url: credentials.baseUrl + path,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-SIGNATURE': signature,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-PASSPHRASE': credentials.passphrase,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-      
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        }
-        throw new NodeOperationError(this.getNode(), error.message);
-      }
-    }
-  }
-  
-  return returnData;
-}
-
-function createSignature(secret: string, message: string): string {
-  return createHmac('sha256', secret).update(message).digest('hex');
-}
-
-function createTimestamp(): string {
-  return new Date().toISOString();
-}
-
-async function executeLiquidityProviderRewardsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('dydxdexApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const timestamp = createTimestamp();
-
-      switch (operation) {
-        case 'getLiquidityProviderRewards': {
-          const epoch = this.getNodeParameter('epoch', i) as number;
-          
-          let url = `${credentials.baseUrl}/liquidity-provider-rewards`;
-          const queryParams: string[] = [];
-          
-          if (epoch && epoch > 0) {
-            queryParams.push(`epoch=${epoch}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += '?' + queryParams.join('&');
-          }
-
-          const message = `GET${url.replace(credentials.baseUrl, '')}${timestamp}`;
-          const signature = createSignature(credentials.secret, message);
-
-          const options: any = {
-            method: 'GET',
-            url,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-SIGNATURE': signature,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getLiquidityProviderRewardsByAddress': {
-          const address = this.getNodeParameter('address', i) as string;
-          const epoch = this.getNodeParameter('epoch', i) as number;
-
-          if (!address) {
-            throw new NodeOperationError(this.getNode(), 'Address is required');
-          }
-
-          let url = `${credentials.baseUrl}/liquidity-provider-rewards/${address}`;
-          const queryParams: string[] = [];
-          
-          if (epoch && epoch > 0) {
-            queryParams.push(`epoch=${epoch}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += '?' + queryParams.join('&');
-          }
-
-          const message = `GET${url.replace(credentials.baseUrl, '')}${timestamp}`;
-          const signature = createSignature(credentials.secret, message);
-
-          const options: any = {
-            method: 'GET',
-            url,
-            headers: {
-              'DYDX-API-KEY': credentials.apiKey,
-              'DYDX-TIMESTAMP': timestamp,
-              'DYDX-SIGNATURE': signature,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        } else {
-          throw new NodeOperationError(this.getNode(), error.message);
-        }
-      }
-    }
-  }
-
-  return returnData;
-}
+  },
+  default: '',
+  placeholder: '2023-01-02T00:00:00.000Z',
+  description: 'ISO timestamp for the end of the candle data range'
+},
+{
+	displayName: 'Market',
+	name: 'market',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	placeholder: 'BTC-USD',
+	description: 'The market to trade in',
+},
+{
+	displayName: 'Side',
+	name: 'side',
+	type: 'options',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	options: [
+		{
+			name: 'Buy',
+			value: 'BUY',
+		},
+		{
+			name: 'Sell',
+			value: 'SELL',
+		},
+	],
+	default: 'BUY',
+	description: 'Order side',
+},
+{
+	displayName: 'Type',
+	name: 'type',
+	type: 'options',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	options: [
+		{
+			name: 'Market',
+			value: 'MARKET',
+		},
+		{
+			name: 'Limit',
+			value: 'LIMIT',
+		},
+		{
+			name: 'Stop',
+			value: 'STOP',
+		},
+		{
+			name: 'Stop Limit',
+			value: 'STOP_LIMIT',
+		},
+	],
+	default: 'LIMIT',
+	description: 'Order type',
+},
+{
+	displayName: 'Size',
+	name: 'size',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Size of the order',
+},
+{
+	displayName: 'Price',
+	name: 'price',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Price of the order (required for limit orders)',
+},
+{
+	displayName: 'Limit Fee',
+	name: 'limitFee',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Limit fee for the order',
+},
+{
+	displayName: 'Expiration',
+	name: 'expiration',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Order expiration timestamp',
+},
+{
+	displayName: 'Time In Force',
+	name: 'timeInForce',
+	type: 'options',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	options: [
+		{
+			name: 'Good Till Canceled',
+			value: 'GTT',
+		},
+		{
+			name: 'Fill or Kill',
+			value: 'FOK',
+		},
+		{
+			name: 'Immediate or Cancel',
+			value: 'IOC',
+		},
+	],
+	default: 'GTT',
+	description: 'Time in force for the order',
+},
+{
+	displayName: 'Post Only',
+	name: 'postOnly',
+	type: 'boolean',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: false,
+	description: 'Whether the order is post-only',
+},
+{
+	displayName: 'Client ID',
+	name: 'clientId',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Client-specified order ID',
+},
+{
+	displayName: 'Position ID',
+	name: 'positionId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'Position ID for position management',
+},
+{
+	displayName: 'Signature',
+	name: 'signature',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['createOrder'],
+		},
+	},
+	default: '',
+	description: 'STARK key cryptographic signature',
+},
+{
+	displayName: 'Market',
+	name: 'market',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrders'],
+		},
+	},
+	default: '',
+	description: 'Filter orders by market',
+},
+{
+	displayName: 'Status',
+	name: 'status',
+	type: 'options',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrders'],
+		},
+	},
+	options: [
+		{
+			name: 'Open',
+			value: 'OPEN',
+		},
+		{
+			name: 'Filled',
+			value: 'FILLED',
+		},
+		{
+			name: 'Canceled',
+			value: 'CANCELED',
+		},
+		{
+			name: 'Pending',
+			value: 'PENDING',
+		},
+	],
+	default: '',
+	description: 'Filter orders by status',
+},
+{
+	displayName: 'Side',
+	name: 'side',
+	type: 'options',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrders'],
+		},
+	},
+	options: [
+		{
+			name: 'Buy',
+			value: 'BUY',
+		},
+		{
+			name: 'Sell',
+			value: 'SELL',
+		},
+	],
+	default: '',
+	description: 'Filter orders by side',
+},
+{
+	displayName: 'Type',
+	name: 'type',
+	type: 'options',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrders'],
+		},
+	},
+	options: [
+		{
+			name: 'Market',
+			value: 'MARKET',
+		},
+		{
+			name: 'Limit',
+			value: 'LIMIT',
+		},
+		{
+			name: 'Stop',
+			value: 'STOP',
+		},
+		{
+			name: 'Stop Limit',
+			value: 'STOP_LIMIT',
+		},
+	],
+	default: '',
+	description: 'Filter orders by type',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrders'],
+		},
+	},
+	default: 100,
+	description: 'Maximum number of orders to return',
+},
+{
+	displayName: 'Order ID',
+	name: 'orderId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['getOrder', 'cancelOrder'],
+		},
+	},
+	default: '',
+	description: 'ID of the order',
+},
+{
+	displayName: 'Market',
+	name: 'market',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['order'],
+			operation: ['cancelAllOrders'],
+		},
+	},
+	default: '',
+	description: 'Cancel orders only for this market (optional)',
+},
+{
+	displayName: 'Position ID',
+	name: 'positionId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getPosition'],
+		},
+	},
+	default: '',
+	description: 'The unique identifier of the position to retrieve',
+},
+{
+	displayName: 'Market',
+	name: 'market',
+	type: 'string',
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getPositions'],
+		},
+	},
+	default: '',
+	description: 'Filter positions by market (e.g., BTC-USD)',
+},
+{
+	displayName: 'Status',
+	name: 'status',
+	type: 'options',
+	options: [
+		{
+			name: 'Open',
+			value: 'OPEN',
+		},
+		{
+			name: 'Closed',
+			value: 'CLOSED',
+		},
+		{
+			name: 'Liquidated',
+			value: 'LIQUIDATED',
+		},
+	],
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getPositions'],
+		},
+	},
+	default: '',
+	description: 'Filter positions by status',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	typeOptions: {
+		minValue: 1,
+		maxValue: 100,
+	},
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getPositions', 'getHistoricalPnl'],
+		},
+	},
+	default: 100,
+	description: 'Maximum number of results to return',
+},
+{
+	displayName: 'Created Before Or At',
+	name: 'createdBeforeOrAt',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getPositions', 'getHistoricalPnl'],
+		},
+	},
+	default: '',
+	description: 'Filter results created before or at this timestamp',
+},
+{
+	displayName: 'Created On Or After',
+	name: 'createdOnOrAfter',
+	type: 'dateTime',
+	displayOptions: {
+		show: {
+			resource: ['position'],
+			operation: ['getHistoricalPnl'],
+		},
+	},
+	default: '',
+	description: 'Filter results created on or after this timestamp',
+},
+{
+  displayName: 'Ethereum Address',
+  name: 'ethereumAddress',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['account'], operation: ['getAccount'] } },
+  default: '',
+  description: 'The Ethereum address of the account to retrieve'
+},
+{
+  displayName: 'Email',
+  name: 'email',
+  type: 'string',
+  required: false,
+  displayOptions: { show: { resource: ['account'], operation: ['updateUser'] } },
+  default: '',
+  description: 'User email address'
+},
+{
+  displayName: 'Username',
+  name: 'username',
+  type: 'string',
+  required: false,
+  displayOptions: { show: { resource: ['account'], operation: ['updateUser'] } },
+  default: '',
+  description: 'Username for the user profile'
+},
+{
+  displayName: 'Is Sharing Username',
+  name: 'isSharingUsername',
+  type: 'boolean',
+  required: false,
+  displayOptions: { show: { resource: ['account'], operation: ['updateUser'] } },
+  default: false,
+  description: 'Whether to share username publicly'
+},
+{
+  displayName: 'Is Sharing Address',
+  name: 'isSharingAddress',
+  type: 'boolean',
+  required: false,
+  displayOptions: { show: { resource: ['account'], operation: ['updateUser'] } },
+  default: false,
+  description: 'Whether to share Ethereum address publicly'
+},
+{
+  displayName: 'Preferences',
+  name: 'preferences',
+  type: 'json',
+  required: true,
+  displayOptions: { show: { resource: ['account'], operation: ['updateEmailNotifications'] } },
+  default: '{}',
+  description: 'Email notification preferences as JSON object'
+},
+{
+  displayName: 'Type',
+  name: 'type',
+  type: 'options',
+  displayOptions: { show: { resource: ['transfer'], operation: ['getTransfers'] } },
+  options: [
+    { name: 'All', value: '' },
+    { name: 'Deposit', value: 'DEPOSIT' },
+    { name: 'Withdrawal', value: 'WITHDRAWAL' },
+    { name: 'Transfer In', value: 'TRANSFER_IN' },
+    { name: 'Transfer Out', value: 'TRANSFER_OUT' },
+  ],
+  default: '',
+  description: 'Filter transfers by type',
+},
+{
+  displayName: 'Limit',
+  name: 'limit',
+  type: 'number',
+  displayOptions: { show: { resource: ['transfer'], operation: ['getTransfers', 'getWithdrawals'] } },
+  default: 100,
+  description: 'Number of results to return (max 100)',
+  typeOptions: { minValue: 1, maxValue: 100 },
+},
+{
+  displayName: 'Created Before Or At',
+  name: 'createdBeforeOrAt',
+  type: 'dateTime',
+  displayOptions: { show: { resource: ['transfer'], operation: ['getTransfers', 'getWithdrawals'] } },
+  default: '',
+  description: 'Return transfers created before or at this timestamp',
+},
+{
+  displayName: 'Amount',
+  name: 'amount',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['transfer'], operation: ['createWithdrawal'] } },
+  default: '',
+  description: 'Amount to withdraw',
+},
+{
+  displayName: 'Asset',
+  name: 'asset',
+  type: 'options',
+  required: true,
+  displayOptions: { show: { resource: ['transfer'], operation: ['createWithdrawal'] } },
+  options: [
+    { name: 'USD Coin', value: 'USDC' },
+    { name: 'Ethereum', value: 'ETH' },
+    { name: 'Bitcoin', value: 'BTC' },
+  ],
+  default: 'USDC',
+  description: 'Asset to withdraw',
+},
+{
+  displayName: 'Client ID',
+  name: 'clientId',
+  type: 'string',
+  required: true,
+  displayOptions: { show: { resource: ['transfer'], operation: ['createWithdrawal'] } },
+  default: '',
+  description: 'Unique client ID for the withdrawal',
+},
+{
+	displayName: 'Market',
+	name: 'market',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['funding'],
+			operation: ['getFundingPayments', 'getHistoricalFundingRates'],
+		},
+	},
+	default: '',
+	description: 'The market to get funding data for (e.g., BTC-USD)',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['funding'],
+			operation: ['getFundingPayments', 'getHistoricalFundingRates'],
+		},
+	},
+	default: 100,
+	description: 'Maximum number of records to return',
+},
+{
+	displayName: 'Effective Before Or At',
+	name: 'effectiveBeforeOrAt',
+	type: 'dateTime',
