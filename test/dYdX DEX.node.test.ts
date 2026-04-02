@@ -33,20 +33,20 @@ describe('dYdXDEX Node', () => {
       expect(node.description.outputs).toContain('main');
     });
 
-    it('should define 12 resources', () => {
+    it('should define 7 resources', () => {
       const resourceProp = node.description.properties.find(
         (p: any) => p.name === 'resource'
       );
       expect(resourceProp).toBeDefined();
       expect(resourceProp!.type).toBe('options');
-      expect(resourceProp!.options).toHaveLength(12);
+      expect(resourceProp!.options).toHaveLength(7);
     });
 
     it('should have operation dropdowns for each resource', () => {
       const operations = node.description.properties.filter(
         (p: any) => p.name === 'operation'
       );
-      expect(operations.length).toBe(12);
+      expect(operations.length).toBe(7);
     });
 
     it('should require credentials', () => {
@@ -67,1805 +67,941 @@ describe('dYdXDEX Node', () => {
   });
 
   // Resource-specific tests
-describe('Accounts Resource', () => {
+describe('Market Resource', () => {
   let mockExecuteFunctions: any;
 
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secretKey: 'test-secret-key',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange/v3',
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-key', 
+        baseUrl: 'https://api.dydx.exchange' 
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
+      helpers: { 
+        httpRequest: jest.fn(), 
+        requestWithAuthentication: jest.fn() 
+      },
+    };
+  });
+
+  it('should get all markets successfully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getMarkets');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ markets: [] });
+
+    const result = await executeMarketOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'GET',
+      url: 'https://api.dydx.exchange/v3/markets',
+      headers: { 'Authorization': 'Bearer test-key' },
+      json: true
+    });
+  });
+
+  it('should get specific market successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getMarket')
+      .mockReturnValueOnce('BTC-USD');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ market: 'BTC-USD' });
+
+    const result = await executeMarketOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'GET',
+      url: 'https://api.dydx.exchange/v3/markets/BTC-USD',
+      headers: { 'Authorization': 'Bearer test-key' },
+      json: true
+    });
+  });
+
+  it('should get orderbook successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getOrderbook')
+      .mockReturnValueOnce('BTC-USD');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ bids: [], asks: [] });
+
+    const result = await executeMarketOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+      method: 'GET',
+      url: 'https://api.dydx.exchange/v3/orderbook/BTC-USD',
+      headers: { 'Authorization': 'Bearer test-key' },
+      json: true
+    });
+  });
+
+  it('should handle errors and continue on fail', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getMarkets');
+    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+    const result = await executeMarketOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].json).toEqual({ error: 'API Error' });
+  });
+});
+
+describe('Order Resource', () => {
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.dydx.exchange',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+			},
+		};
+	});
+
+	describe('createOrder', () => {
+		it('should create order successfully', async () => {
+			const mockResponse = {
+				order: {
+					id: 'order-123',
+					market: 'BTC-USD',
+					side: 'BUY',
+					type: 'LIMIT',
+					size: '1.0',
+					price: '50000',
+					status: 'OPEN',
+				},
+			};
+
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('createOrder')
+				.mockReturnValueOnce('BTC-USD')
+				.mockReturnValueOnce('BUY')
+				.mockReturnValueOnce('LIMIT')
+				.mockReturnValueOnce('1.0')
+				.mockReturnValueOnce('50000')
+				.mockReturnValueOnce('0.001')
+				.mockReturnValueOnce('1234567890')
+				.mockReturnValueOnce('GTT')
+				.mockReturnValueOnce(false)
+				.mockReturnValueOnce('client-123')
+				.mockReturnValueOnce('pos-123')
+				.mockReturnValueOnce('signature-123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'POST',
+				url: 'https://api.dydx.exchange/v3/orders',
+				headers: {
+					'DYDX-API-KEY': 'test-key',
+					'Content-Type': 'application/json',
+				},
+				body: {
+					market: 'BTC-USD',
+					side: 'BUY',
+					type: 'LIMIT',
+					size: '1.0',
+					price: '50000',
+					limitFee: '0.001',
+					expiration: '1234567890',
+					timeInForce: 'GTT',
+					postOnly: false,
+					clientId: 'client-123',
+					positionId: 'pos-123',
+					signature: 'signature-123',
+				},
+				json: true,
+			});
+
+			expect(result).toEqual([
+				{
+					json: mockResponse,
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+
+		it('should handle createOrder error', async () => {
+			mockExecuteFunctions.getNodeParameter.mockReturnValue('createOrder');
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([
+				{
+					json: { error: 'API Error' },
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+	});
+
+	describe('getOrders', () => {
+		it('should get orders successfully', async () => {
+			const mockResponse = {
+				orders: [
+					{
+						id: 'order-123',
+						market: 'BTC-USD',
+						side: 'BUY',
+						type: 'LIMIT',
+						status: 'OPEN',
+					},
+				],
+			};
+
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getOrders')
+				.mockReturnValueOnce('BTC-USD')
+				.mockReturnValueOnce('OPEN')
+				.mockReturnValueOnce('BUY')
+				.mockReturnValueOnce('LIMIT')
+				.mockReturnValueOnce(100);
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.dydx.exchange/v3/orders?market=BTC-USD&status=OPEN&side=BUY&type=LIMIT&limit=100',
+				headers: {
+					'DYDX-API-KEY': 'test-key',
+				},
+				json: true,
+			});
+
+			expect(result).toEqual([
+				{
+					json: mockResponse,
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+	});
+
+	describe('getOrder', () => {
+		it('should get order successfully', async () => {
+			const mockResponse = {
+				order: {
+					id: 'order-123',
+					market: 'BTC-USD',
+					side: 'BUY',
+					type: 'LIMIT',
+					status: 'OPEN',
+				},
+			};
+
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getOrder')
+				.mockReturnValueOnce('order-123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.dydx.exchange/v3/orders/order-123',
+				headers: {
+					'DYDX-API-KEY': 'test-key',
+				},
+				json: true,
+			});
+
+			expect(result).toEqual([
+				{
+					json: mockResponse,
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+	});
+
+	describe('cancelOrder', () => {
+		it('should cancel order successfully', async () => {
+			const mockResponse = {
+				cancelOrder: {
+					id: 'order-123',
+					status: 'CANCELED',
+				},
+			};
+
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('cancelOrder')
+				.mockReturnValueOnce('order-123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'DELETE',
+				url: 'https://api.dydx.exchange/v3/orders/order-123',
+				headers: {
+					'DYDX-API-KEY': 'test-key',
+				},
+				json: true,
+			});
+
+			expect(result).toEqual([
+				{
+					json: mockResponse,
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+	});
+
+	describe('cancelAllOrders', () => {
+		it('should cancel all orders successfully', async () => {
+			const mockResponse = {
+				cancelOrders: [
+					{
+						id: 'order-123',
+						status: 'CANCELED',
+					},
+				],
+			};
+
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('cancelAllOrders')
+				.mockReturnValueOnce('BTC-USD');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeOrderOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'DELETE',
+				url: 'https://api.dydx.exchange/v3/orders',
+				headers: {
+					'DYDX-API-KEY': 'test-key',
+					'Content-Type': 'application/json',
+				},
+				body: {
+					market: 'BTC-USD',
+				},
+				json: true,
+			});
+
+			expect(result).toEqual([
+				{
+					json: mockResponse,
+					pairedItem: { item: 0 },
+				},
+			]);
+		});
+	});
+});
+
+describe('Position Resource', () => {
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://api.dydx.exchange',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
+
+	it('should get all positions successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getPositions')
+			.mockReturnValueOnce('BTC-USD')
+			.mockReturnValueOnce('OPEN')
+			.mockReturnValueOnce(50)
+			.mockReturnValueOnce('');
+
+		const mockResponse = {
+			positions: [
+				{
+					id: 'pos1',
+					market: 'BTC-USD',
+					status: 'OPEN',
+					size: '1.5',
+					unrealizedPnl: '150.00',
+				},
+			],
+		};
+
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+		const items = [{ json: {} }];
+		const result = await executePositionOperations.call(mockExecuteFunctions, items);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json).toEqual(mockResponse);
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'GET',
+			url: 'https://api.dydx.exchange/v3/positions?market=BTC-USD&status=OPEN&limit=50',
+			headers: {
+				'DYDX-API-KEY': 'test-key',
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		});
+	});
+
+	it('should get specific position successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getPosition')
+			.mockReturnValueOnce('pos123');
+
+		const mockResponse = {
+			position: {
+				id: 'pos123',
+				market: 'ETH-USD',
+				status: 'OPEN',
+				size: '10.0',
+				unrealizedPnl: '500.00',
+			},
+		};
+
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+		const items = [{ json: {} }];
+		const result = await executePositionOperations.call(mockExecuteFunctions, items);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json).toEqual(mockResponse);
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'GET',
+			url: 'https://api.dydx.exchange/v3/positions/pos123',
+			headers: {
+				'DYDX-API-KEY': 'test-key',
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		});
+	});
+
+	it('should get historical PnL successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getHistoricalPnl')
+			.mockReturnValueOnce(25)
+			.mockReturnValueOnce('')
+			.mockReturnValueOnce('2023-01-01T00:00:00.000Z');
+
+		const mockResponse = {
+			historicalPnl: [
+				{
+					equity: '10000.00',
+					totalPnl: '250.00',
+					createdAt: '2023-01-01T12:00:00.000Z',
+				},
+			],
+		};
+
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+		const items = [{ json: {} }];
+		const result = await executePositionOperations.call(mockExecuteFunctions, items);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json).toEqual(mockResponse);
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+			method: 'GET',
+			url: 'https://api.dydx.exchange/v3/historical-pnl?limit=25&createdOnOrAfter=2023-01-01T00:00:00.000Z',
+			headers: {
+				'DYDX-API-KEY': 'test-key',
+				'Content-Type': 'application/json',
+			},
+			json: true,
+		});
+	});
+
+	it('should handle API errors gracefully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getPositions')
+			.mockReturnValueOnce('')
+			.mockReturnValueOnce('')
+			.mockReturnValueOnce(100)
+			.mockReturnValueOnce('');
+
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+		mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+		const items = [{ json: {} }];
+		const result = await executePositionOperations.call(mockExecuteFunctions, items);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.error).toBe('API Error');
+	});
+
+	it('should throw error for unknown operation', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('unknownOperation');
+
+		const items = [{ json: {} }];
+
+		await expect(
+			executePositionOperations.call(mockExecuteFunctions, items)
+		).rejects.toThrow('Unknown operation: unknownOperation');
+	});
+});
+
+describe('Account Resource', () => {
+  let mockExecuteFunctions: any;
+
+  beforeEach(() => {
+    mockExecuteFunctions = {
+      getNodeParameter: jest.fn(),
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-api-key', 
+        baseUrl: 'https://api.dydx.exchange' 
+      }),
+      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+      continueOnFail: jest.fn().mockReturnValue(false),
+      helpers: { 
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn() 
       },
     };
   });
 
   describe('getAccount operation', () => {
-    it('should successfully get account by Ethereum address', async () => {
-      const mockResponse = {
-        account: {
-          id: 'acc123',
-          owner: '0x1234567890abcdef1234567890abcdef12345678',
-          number: '0',
-          balances: {},
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => {
-        if (name === 'operation') return 'getAccount';
-        if (name === 'ethereumAddress') return '0x1234567890abcdef1234567890abcdef12345678';
-        return undefined;
-      });
-
+    it('should get account information successfully', async () => {
+      const mockResponse = { account: { id: '123', address: '0x123' } };
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getAccount')
+        .mockReturnValueOnce('0x1234567890123456789012345678901234567890');
       mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-      const result = await executeAccountsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/accounts?ethereumAddress='),
-        })
-      );
-    });
-  });
-
-  describe('getAccountById operation', () => {
-    it('should successfully get account by ID', async () => {
-      const mockResponse = {
-        account: {
-          id: 'acc123',
-          owner: '0x1234567890abcdef1234567890abcdef12345678',
-          number: '0',
-          balances: {},
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => {
-        if (name === 'operation') return 'getAccountById';
-        if (name === 'accountId') return 'acc123';
-        return undefined;
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeAccountsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/accounts/acc123'),
-        })
-      );
-    });
-  });
-
-  describe('updateAccount operation', () => {
-    it('should successfully update account', async () => {
-      const updateData = { setting1: 'value1' };
-      const mockResponse = {
-        account: {
-          id: 'acc123',
-          owner: '0x1234567890abcdef1234567890abcdef12345678',
-          setting1: 'value1',
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => {
-        if (name === 'operation') return 'updateAccount';
-        if (name === 'accountId') return 'acc123';
-        if (name === 'updateData') return updateData;
-        return undefined;
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeAccountsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'PUT',
-          url: expect.stringContaining('/accounts/acc123'),
-          body: updateData,
-        })
-      );
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle API errors when continueOnFail is true', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => {
-        if (name === 'operation') return 'getAccount';
-        if (name === 'ethereumAddress') return 'invalid-address';
-        return undefined;
-      });
-
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
-
-      const result = await executeAccountsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json.error).toBe('API Error');
-    });
-
-    it('should throw error for unknown operation', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => {
-        if (name === 'operation') return 'unknownOperation';
-        return undefined;
-      });
-
-      await expect(
-        executeAccountsOperations.call(mockExecuteFunctions, [{ json: {} }])
-      ).rejects.toThrow('Unknown operation: unknownOperation');
-    });
-  });
-});
-
-describe('Orders Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secret: 'test-secret',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('createOrder should place a new order successfully', async () => {
-    const mockResponse = {
-      order: {
-        id: 'test-order-id',
-        market: 'BTC-USD',
-        side: 'BUY',
-        type: 'LIMIT',
-        size: '1.0',
-        price: '50000',
-        status: 'OPEN',
-      },
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'createOrder',
-        market: 'BTC-USD',
-        side: 'BUY',
-        type: 'LIMIT',
-        size: '1.0',
-        price: '50000',
-        timeInForce: 'GTC',
-      };
-      return params[param];
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.dydx.exchange/v3/orders',
-        headers: expect.objectContaining({
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: 'https://api.dydx.exchange/v3/accounts/0x1234567890123456789012345678901234567890',
+        headers: {
           'DYDX-API-KEY': 'test-api-key',
           'Content-Type': 'application/json',
-        }),
-      })
-    );
-  });
-
-  test('getAllOrders should retrieve orders with filters', async () => {
-    const mockResponse = {
-      orders: [
-        {
-          id: 'order-1',
-          market: 'BTC-USD',
-          side: 'BUY',
-          status: 'OPEN',
         },
-        {
-          id: 'order-2',
-          market: 'BTC-USD',
-          side: 'SELL',
-          status: 'FILLED',
+        json: true,
+      });
+      expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+    });
+
+    it('should handle getAccount errors', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getAccount')
+        .mockReturnValueOnce('0x1234567890123456789012345678901234567890');
+      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+      const result = await executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+      expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
+    });
+  });
+
+  describe('getUser operation', () => {
+    it('should get user profile successfully', async () => {
+      const mockResponse = { user: { id: '123', email: 'test@example.com' } };
+      mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getUser');
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+      const result = await executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: 'https://api.dydx.exchange/v3/users',
+        headers: {
+          'DYDX-API-KEY': 'test-api-key',
+          'Content-Type': 'application/json',
         },
-      ],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getAllOrders',
-        market: 'BTC-USD',
-        status: 'OPEN',
-        side: '',
-        type: '',
-        limit: 100,
-      };
-      return params[param];
+        json: true,
+      });
+      expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
     });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: expect.stringContaining('market=BTC-USD'),
-      })
-    );
   });
 
-  test('getOrder should retrieve specific order', async () => {
-    const mockResponse = {
-      order: {
-        id: 'test-order-id',
-        market: 'BTC-USD',
-        side: 'BUY',
-        status: 'OPEN',
-      },
-    };
+  describe('updateUser operation', () => {
+    it('should update user profile successfully', async () => {
+      const mockResponse = { user: { id: '123', email: 'newemail@example.com' } };
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('updateUser')
+        .mockReturnValueOnce('newemail@example.com')
+        .mockReturnValueOnce('newusername')
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'getOrder',
-        orderId: 'test-order-id',
-      };
-      return params[param];
+      const result = await executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: 'https://api.dydx.exchange/v3/users',
+        headers: {
+          'DYDX-API-KEY': 'test-api-key',
+          'Content-Type': 'application/json',
+        },
+        body: {
+          email: 'newemail@example.com',
+          username: 'newusername',
+          isSharingUsername: true,
+          isSharingAddress: false,
+        },
+        json: true,
+      });
+      expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
     });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.dydx.exchange/v3/orders/test-order-id',
-      })
-    );
   });
 
-  test('cancelOrder should cancel specific order', async () => {
-    const mockResponse = {
-      cancelOrder: {
-        id: 'test-order-id',
-        status: 'CANCELED',
-      },
-    };
+  describe('updateEmailNotifications operation', () => {
+    it('should update email notifications successfully', async () => {
+      const mockResponse = { success: true };
+      const preferences = { orderFills: true, transfers: false };
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('updateEmailNotifications')
+        .mockReturnValueOnce(JSON.stringify(preferences));
+      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
 
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'cancelOrder',
-        orderId: 'test-order-id',
-      };
-      return params[param];
+      const result = await executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+        method: 'POST',
+        url: 'https://api.dydx.exchange/v3/users/email-notifications',
+        headers: {
+          'DYDX-API-KEY': 'test-api-key',
+          'Content-Type': 'application/json',
+        },
+        body: { preferences },
+        json: true,
+      });
+      expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    it('should handle invalid JSON in preferences', async () => {
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('updateEmailNotifications')
+        .mockReturnValueOnce('invalid json');
 
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'DELETE',
-        url: 'https://api.dydx.exchange/v3/orders/test-order-id',
-      })
-    );
-  });
-
-  test('cancelAllOrders should cancel all orders for market', async () => {
-    const mockResponse = {
-      cancelOrders: [
-        { id: 'order-1', status: 'CANCELED' },
-        { id: 'order-2', status: 'CANCELED' },
-      ],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'cancelAllOrders',
-        market: 'BTC-USD',
-      };
-      return params[param];
+      await expect(executeAccountOperations.call(mockExecuteFunctions, [{ json: {} }])).rejects.toThrow();
     });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'DELETE',
-        url: expect.stringContaining('market=BTC-USD'),
-      })
-    );
-  });
-
-  test('should handle API errors gracefully', async () => {
-    const mockError = new Error('API Error: Invalid order parameters');
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      const params: any = {
-        operation: 'createOrder',
-        market: 'BTC-USD',
-        side: 'BUY',
-        type: 'LIMIT',
-        size: '1.0',
-        price: '50000',
-      };
-      return params[param];
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    const result = await executeOrdersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual({ error: 'API Error: Invalid order parameters' });
   });
 });
 
-describe('Positions Resource', () => {
+describe('Transfer Resource', () => {
   let mockExecuteFunctions: any;
 
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        apiSecret: 'test-api-secret',
-        baseUrl: 'https://api.dydx.exchange/v3',
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-key', 
+        baseUrl: 'https://api.dydx.exchange' 
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
+      helpers: { 
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn() 
       },
     };
   });
 
-  describe('getAllPositions', () => {
-    it('should get all positions successfully', async () => {
-      const mockResponse = {
-        positions: [
-          {
-            id: 'pos-1',
-            market: 'BTC-USD',
-            side: 'LONG',
-            status: 'OPEN',
-            size: '0.1',
-          },
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getAllPositions')
-        .mockReturnValueOnce('BTC-USD')
-        .mockReturnValueOnce('OPEN');
-      
+  describe('getTransfers', () => {
+    it('should get transfers successfully', async () => {
+      const mockResponse = { transfers: [{ id: '1', type: 'DEPOSIT', amount: '100' }] };
       mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getTransfers')
+        .mockReturnValueOnce('DEPOSIT')
+        .mockReturnValueOnce(50)
+        .mockReturnValueOnce('');
 
-      const result = await executePositionsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/positions?market=BTC-USD&status=OPEN'),
-        })
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
       );
+
+      expect(result[0].json).toEqual(mockResponse);
     });
 
-    it('should handle errors when getting all positions', async () => {
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getAllPositions')
-        .mockReturnValueOnce('')
-        .mockReturnValueOnce('OPEN');
-      
+    it('should handle getTransfers error', async () => {
       mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
       mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+      mockExecuteFunctions.getNodeParameter.mockReturnValue('getTransfers');
 
-      const result = await executePositionsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
+      );
 
-      expect(result).toHaveLength(1);
       expect(result[0].json.error).toBe('API Error');
     });
   });
 
-  describe('getPosition', () => {
-    it('should get a specific position successfully', async () => {
-      const mockResponse = {
-        position: {
-          id: 'pos-123',
-          market: 'ETH-USD',
-          side: 'SHORT',
-          status: 'OPEN',
-          size: '0.5',
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getPosition')
-        .mockReturnValueOnce('pos-123')
-        .mockReturnValueOnce('ETH-USD');
-      
+  describe('createWithdrawal', () => {
+    it('should create withdrawal successfully', async () => {
+      const mockResponse = { withdrawal: { id: '123', status: 'PENDING' } };
       mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('createWithdrawal')
+        .mockReturnValueOnce('100.50')
+        .mockReturnValueOnce('USDC')
+        .mockReturnValueOnce('client-123');
 
-      const result = await executePositionsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/positions/pos-123?market=ETH-USD'),
-        })
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
       );
+
+      expect(result[0].json).toEqual(mockResponse);
+    });
+
+    it('should handle createWithdrawal error', async () => {
+      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('Insufficient balance'));
+      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+      mockExecuteFunctions.getNodeParameter.mockReturnValue('createWithdrawal');
+
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
+      );
+
+      expect(result[0].json.error).toBe('Insufficient balance');
     });
   });
 
-  describe('closePosition', () => {
-    it('should close a position successfully', async () => {
-      const mockResponse = {
-        position: {
-          id: 'pos-456',
-          market: 'BTC-USD',
-          status: 'CLOSED',
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('closePosition')
-        .mockReturnValueOnce('BTC-USD')
-        .mockReturnValueOnce('req-123');
-      
+  describe('getWithdrawals', () => {
+    it('should get withdrawals successfully', async () => {
+      const mockResponse = { withdrawals: [{ id: '1', amount: '50', status: 'COMPLETED' }] };
       mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+      mockExecuteFunctions.getNodeParameter
+        .mockReturnValueOnce('getWithdrawals')
+        .mockReturnValueOnce(25)
+        .mockReturnValueOnce('2024-01-01T00:00:00Z');
 
-      const result = await executePositionsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'POST',
-          url: expect.stringContaining('/positions/close'),
-          body: {
-            market: 'BTC-USD',
-            requestId: 'req-123',
-          },
-        })
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
       );
+
+      expect(result[0].json).toEqual(mockResponse);
+    });
+
+    it('should handle getWithdrawals error', async () => {
+      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('Rate limit exceeded'));
+      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+      mockExecuteFunctions.getNodeParameter.mockReturnValue('getWithdrawals');
+
+      const result = await executeTransferOperations.call(
+        mockExecuteFunctions,
+        [{ json: {} }]
+      );
+
+      expect(result[0].json.error).toBe('Rate limit exceeded');
     });
   });
 });
 
-describe('Fills Resource', () => {
+describe('Funding Resource', () => {
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-api-key',
+				baseUrl: 'https://api.dydx.exchange',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+			},
+		};
+	});
+
+	describe('getFundingPayments operation', () => {
+		it('should get funding payments successfully', async () => {
+			const mockResponse = { fundingPayments: [{ id: '1', market: 'BTC-USD', payment: '100.50' }] };
+			mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
+				switch (paramName) {
+					case 'operation': return 'getFundingPayments';
+					case 'market': return 'BTC-USD';
+					case 'limit': return 100;
+					default: return '';
+				}
+			});
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeFundingOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.dydx.exchange/v3/funding?market=BTC-USD&limit=100',
+				headers: {
+					'DYDX-API-KEY': 'test-api-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
+
+		it('should handle errors for getFundingPayments', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
+				switch (paramName) {
+					case 'operation': return 'getFundingPayments';
+					case 'market': return 'BTC-USD';
+					default: return '';
+				}
+			});
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeFundingOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
+		});
+	});
+
+	describe('getHistoricalFundingRates operation', () => {
+		it('should get historical funding rates successfully', async () => {
+			const mockResponse = { historicalFunding: [{ market: 'BTC-USD', rate: '0.0001', effectiveAt: '2023-01-01T00:00:00Z' }] };
+			mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
+				switch (paramName) {
+					case 'operation': return 'getHistoricalFundingRates';
+					case 'market': return 'BTC-USD';
+					case 'limit': return 100;
+					default: return '';
+				}
+			});
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+
+			const result = await executeFundingOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://api.dydx.exchange/v3/historical-funding/BTC-USD?limit=100',
+				headers: {
+					'DYDX-API-KEY': 'test-api-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
+
+		it('should handle missing market parameter for getHistoricalFundingRates', async () => {
+			mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
+				switch (paramName) {
+					case 'operation': return 'getHistoricalFundingRates';
+					case 'market': return '';
+					default: return '';
+				}
+			});
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+			const result = await executeFundingOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+			expect(result).toEqual([{ json: { error: 'Market parameter is required for getting historical funding rates' }, pairedItem: { item: 0 } }]);
+		});
+	});
+});
+
+describe('ApiKey Resource', () => {
   let mockExecuteFunctions: any;
 
   beforeEach(() => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secret: 'test-secret',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
+      getCredentials: jest.fn().mockResolvedValue({ 
+        apiKey: 'test-key', 
+        baseUrl: 'https://api.dydx.exchange' 
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
+      helpers: { 
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn() 
       },
     };
   });
 
-  test('should get all fills successfully', async () => {
-    const mockFillsResponse = {
-      fills: [
-        {
-          id: 'fill-1',
-          side: 'BUY',
-          liquidity: 'TAKER',
-          type: 'LIMIT',
-          market: 'BTC-USD',
-          orderId: 'order-1',
-          price: '50000',
-          size: '0.1',
-          fee: '5',
-          createdAt: '2023-01-01T00:00:00.000Z',
-        },
-      ],
-    };
+  it('should create API key successfully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('createApiKey');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      apiKey: 'new-api-key-123',
+      secret: 'secret-key'
+    });
 
-    mockExecuteFunctions.getNodeParameter
-      .mockReturnValueOnce('getAllFills')
-      .mockReturnValueOnce('BTC-USD')
-      .mockReturnValueOnce('')
-      .mockReturnValueOnce(100)
-      .mockReturnValueOnce('');
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockFillsResponse);
-
-    const result = await executeFillsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+    const result = await executeApiKeyOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockFillsResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: expect.stringContaining('/v3/fills'),
-        headers: expect.objectContaining({
-          'DYDX-API-KEY': 'test-api-key',
-          'DYDX-SIGNATURE': expect.any(String),
-          'DYDX-TIMESTAMP': expect.any(String),
-          'DYDX-PASSPHRASE': 'test-passphrase',
-        }),
-      }),
-    );
-  });
-
-  test('should get specific fill successfully', async () => {
-    const mockFillResponse = {
-      fill: {
-        id: 'fill-1',
-        side: 'BUY',
-        liquidity: 'TAKER',
-        type: 'LIMIT',
-        market: 'BTC-USD',
-        orderId: 'order-1',
-        price: '50000',
-        size: '0.1',
-        fee: '5',
-        createdAt: '2023-01-01T00:00:00.000Z',
-      },
-    };
-
-    mockExecuteFunctions.getNodeParameter
-      .mockReturnValueOnce('getFill')
-      .mockReturnValueOnce('fill-1');
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockFillResponse);
-
-    const result = await executeFillsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockFillResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: expect.stringContaining('/v3/fills/fill-1'),
-      }),
-    );
-  });
-
-  test('should handle API errors', async () => {
-    mockExecuteFunctions.getNodeParameter
-      .mockReturnValueOnce('getAllFills')
-      .mockReturnValueOnce('')
-      .mockReturnValueOnce('')
-      .mockReturnValueOnce(100)
-      .mockReturnValueOnce('');
-
-    const apiError = new Error('API Error');
-    (apiError as any).httpCode = 400;
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-    await expect(
-      executeFillsOperations.call(mockExecuteFunctions, [{ json: {} }]),
-    ).rejects.toThrow('API Error');
-  });
-
-  test('should continue on fail when enabled', async () => {
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.getNodeParameter
-      .mockReturnValueOnce('getAllFills')
-      .mockReturnValueOnce('')
-      .mockReturnValueOnce('')
-      .mockReturnValueOnce(100)
-      .mockReturnValueOnce('');
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
-
-    const result = await executeFillsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json.error).toBe('API Error');
-  });
-});
-
-describe('Transfers Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        privateKey: 'test-private-key',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('createTransfer should create a transfer successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'createTransfer';
-        case 'type': return 'DEPOSIT';
-        case 'amount': return '100.00';
-        case 'asset': return 'USDC';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      transfer: {
-        id: 'transfer-123',
-        type: 'DEPOSIT',
-        amount: '100.00',
-        asset: 'USDC',
-        status: 'PENDING',
-      },
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeTransfersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.dydx.exchange/v3/transfers',
-        headers: expect.objectContaining({
-          'DYDX-API-KEY': 'test-api-key',
-          'Content-Type': 'application/json',
-        }),
-      }),
-    );
-  });
-
-  test('getAllTransfers should fetch transfers with filters', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAllTransfers';
-        case 'type': return 'DEPOSIT';
-        case 'limit': return 50;
-        case 'createdBeforeOrAt': return '';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      transfers: [
-        {
-          id: 'transfer-123',
-          type: 'DEPOSIT',
-          amount: '100.00',
-          asset: 'USDC',
-          status: 'CONFIRMED',
-        },
-      ],
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeTransfersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.dydx.exchange/v3/transfers?type=DEPOSIT&limit=50',
-      }),
-    );
-  });
-
-  test('getTransfer should fetch a specific transfer', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getTransfer';
-        case 'transferId': return 'transfer-123';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      transfer: {
-        id: 'transfer-123',
-        type: 'WITHDRAWAL',
-        amount: '50.00',
-        asset: 'USDC',
-        status: 'CONFIRMED',
-      },
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeTransfersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.dydx.exchange/v3/transfers/transfer-123',
-      }),
-    );
-  });
-
-  test('should handle API errors gracefully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getTransfer';
-        case 'transferId': return 'invalid-id';
-        default: return '';
-      }
-    });
-
-    const mockError = new Error('Transfer not found');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    const result = await executeTransfersOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-    expect(result).toEqual([
-      { json: { error: 'Transfer not found' }, pairedItem: { item: 0 } },
-    ]);
-  });
-});
-
-describe('Markets Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        apiSecret: 'test-api-secret',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getAllMarkets', () => {
-    it('should get all markets successfully', async () => {
-      const mockResponse = {
-        markets: {
-          'BTC-USD': {
-            market: 'BTC-USD',
-            status: 'ONLINE',
-            baseAsset: 'BTC',
-            quoteAsset: 'USD',
-          },
-          'ETH-USD': {
-            market: 'ETH-USD',
-            status: 'ONLINE',
-            baseAsset: 'ETH',
-            quoteAsset: 'USD',
-          },
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getAllMarkets');
-      
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeMarketsOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toEqual([
-        { 
-          json: mockResponse, 
-          pairedItem: { item: 0 } 
-        }
-      ]);
-
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: 'https://api.dydx.exchange/v3/markets',
-          headers: expect.objectContaining({
-            'DYDX-API-KEY': 'test-api-key',
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
-    });
-
-    it('should handle getAllMarkets error', async () => {
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getAllMarkets');
-      
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('API request failed')
-      );
-
-      const items = [{ json: {} }];
-      
-      await expect(
-        executeMarketsOperations.call(mockExecuteFunctions, items)
-      ).rejects.toThrow('API request failed');
+    expect(result[0].json).toEqual({
+      apiKey: 'new-api-key-123',
+      secret: 'secret-key'
     });
   });
 
-  describe('getMarket', () => {
-    it('should get specific market successfully', async () => {
-      const mockResponse = {
-        market: {
-          market: 'BTC-USD',
-          status: 'ONLINE',
-          baseAsset: 'BTC',
-          quoteAsset: 'USD',
-          stepSize: '0.001',
-          tickSize: '1',
-          indexPrice: '50000.00',
-          oraclePrice: '50000.00',
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getMarket')
-        .mockReturnValueOnce('BTC-USD');
-      
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeMarketsOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toEqual([
-        { 
-          json: mockResponse, 
-          pairedItem: { item: 0 } 
-        }
-      ]);
-
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: 'https://api.dydx.exchange/v3/markets/BTC-USD',
-          headers: expect.objectContaining({
-            'DYDX-API-KEY': 'test-api-key',
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
-    });
-
-    it('should handle getMarket error', async () => {
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getMarket')
-        .mockReturnValueOnce('INVALID-MARKET');
-      
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('Market not found')
-      );
-
-      const items = [{ json: {} }];
-      
-      await expect(
-        executeMarketsOperations.call(mockExecuteFunctions, items)
-      ).rejects.toThrow('Market not found');
-    });
-  });
-
-  describe('error handling', () => {
-    it('should continue on fail when enabled', async () => {
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('getAllMarkets');
-      
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('Network error')
-      );
-
-      const items = [{ json: {} }];
-      const result = await executeMarketsOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toEqual([
-        { 
-          json: { error: 'Network error' }, 
-          pairedItem: { item: 0 } 
-        }
-      ]);
-    });
-
-    it('should throw error for unknown operation', async () => {
-      mockExecuteFunctions.getNodeParameter
-        .mockReturnValueOnce('unknownOperation');
-
-      const items = [{ json: {} }];
-      
-      await expect(
-        executeMarketsOperations.call(mockExecuteFunctions, items)
-      ).rejects.toThrow('Unknown operation: unknownOperation');
-    });
-  });
-});
-
-describe('Candles Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secret: 'test-secret',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getCandles operation', () => {
-    it('should successfully get candle data', async () => {
-      const mockResponse = {
-        candles: [
-          {
-            market: 'BTC-USD',
-            resolution: '1HOUR',
-            low: '45000.00',
-            high: '46000.00',
-            open: '45500.00',
-            close: '45800.00',
-            baseTokenVolume: '123.45',
-            trades: 150,
-            usdVolume: '5650000.00',
-            startedAt: '2023-01-01T00:00:00.000Z',
-            updatedAt: '2023-01-01T01:00:00.000Z',
-          },
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getCandles';
-          case 'market':
-            return 'BTC-USD';
-          case 'resolution':
-            return '1HOUR';
-          case 'limit':
-            return 100;
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeCandlesOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/v3/candles/BTC-USD'),
-          headers: expect.objectContaining({
-            'DYDX-API-KEY': 'test-api-key',
-            'DYDX-SIGNATURE': expect.any(String),
-            'DYDX-TIMESTAMP': expect.any(String),
-            'DYDX-PASSPHRASE': 'test-passphrase',
-          }),
-        })
-      );
-    });
-
-    it('should handle API errors gracefully', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getCandles';
-          case 'market':
-            return 'INVALID-MARKET';
-          case 'resolution':
-            return '1HOUR';
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('Market not found')
-      );
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-      const result = await executeCandlesOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json.error).toBe('Market not found');
-    });
-
-    it('should include query parameters when provided', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getCandles';
-          case 'market':
-            return 'ETH-USD';
-          case 'resolution':
-            return '1DAY';
-          case 'fromISO':
-            return '2023-01-01T00:00:00Z';
-          case 'toISO':
-            return '2023-01-02T00:00:00Z';
-          case 'limit':
-            return 50;
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({ candles: [] });
-
-      await executeCandlesOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: expect.stringContaining('resolution=1DAY'),
-        })
-      );
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: expect.stringContaining('limit=50'),
-        })
-      );
-    });
-  });
-});
-
-describe('Trades Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secret: 'test-secret',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getMarketTrades', () => {
-    it('should successfully get market trades', async () => {
-      const mockResponse = {
-        trades: [
-          {
-            id: '12345',
-            market: 'BTC-USD',
-            price: '50000.00',
-            size: '0.1',
-            side: 'BUY',
-            createdAt: '2023-01-01T00:00:00.000Z',
-          },
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getMarketTrades';
-          case 'market':
-            return 'BTC-USD';
-          case 'limit':
-            return 100;
-          case 'startingBeforeOrAt':
-            return '';
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const items = [{ json: {} }];
-      const result = await executeTradesOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toEqual([
-        {
-          json: mockResponse,
-          pairedItem: { item: 0 },
-        },
-      ]);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/v3/trades/BTC-USD'),
-          headers: expect.objectContaining({
-            'DYDX-API-KEY': 'test-api-key',
-            'DYDX-SIGNATURE': expect.any(String),
-            'DYDX-TIMESTAMP': expect.any(String),
-            'DYDX-PASSPHRASE': 'test-passphrase',
-          }),
-        })
-      );
-    });
-
-    it('should handle API errors', async () => {
-      const mockError = {
-        httpCode: 400,
-        message: 'Invalid market parameter',
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getMarketTrades';
-          case 'market':
-            return 'INVALID-MARKET';
-          case 'limit':
-            return 100;
-          case 'startingBeforeOrAt':
-            return '';
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-      const items = [{ json: {} }];
-
-      await expect(
-        executeTradesOperations.call(mockExecuteFunctions, items)
-      ).rejects.toThrow();
-    });
-
-    it('should handle errors with continueOnFail enabled', async () => {
-      const mockError = new Error('Network error');
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getMarketTrades';
-          case 'market':
-            return 'BTC-USD';
-          case 'limit':
-            return 100;
-          case 'startingBeforeOrAt':
-            return '';
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-      const items = [{ json: {} }];
-      const result = await executeTradesOperations.call(mockExecuteFunctions, items);
-
-      expect(result).toEqual([
-        {
-          json: { error: 'Network error' },
-          pairedItem: { item: 0 },
-        },
-      ]);
-    });
-  });
-});
-
-describe('Orderbook Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        apiSecret: 'test-api-secret',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getOrderbook operation', () => {
-    it('should successfully get orderbook data', async () => {
-      const mockOrderbookResponse = {
-        orderbook: {
-          bids: [
-            { price: '50000.0', size: '1.5' },
-            { price: '49999.0', size: '2.0' }
-          ],
-          asks: [
-            { price: '50001.0', size: '1.2' },
-            { price: '50002.0', size: '0.8' }
-          ]
-        }
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getOrderbook';
-          case 'market':
-            return 'BTC-USD';
-          default:
-            return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockOrderbookResponse);
-
-      const result = await executeOrderbookOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockOrderbookResponse);
-      expect(result[0].pairedItem).toEqual({ item: 0 });
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: 'https://api.dydx.exchange/v3/orderbook/BTC-USD',
-          headers: expect.objectContaining({
-            'DYDX-API-KEY': 'test-api-key',
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
-    });
-
-    it('should handle missing market parameter', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getOrderbook';
-          case 'market':
-            return '';
-          default:
-            return undefined;
-        }
-      });
-
-      await expect(executeOrderbookOperations.call(mockExecuteFunctions, [{ json: {} }]))
-        .rejects
-        .toThrow('Market parameter is required');
-    });
-
-    it('should handle API errors', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getOrderbook';
-          case 'market':
-            return 'INVALID-PAIR';
-          default:
-            return undefined;
-        }
-      });
-
-      const apiError = {
-        httpCode: '404',
-        message: 'Market not found',
-      };
-
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-      await expect(executeOrderbookOperations.call(mockExecuteFunctions, [{ json: {} }]))
-        .rejects
-        .toThrow();
-    });
-
-    it('should handle continue on fail', async () => {
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation':
-            return 'getOrderbook';
-          case 'market':
-            return 'BTC-USD';
-          default:
-            return undefined;
-        }
-      });
-
-      const apiError = new Error('API request failed');
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-      const result = await executeOrderbookOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual({ error: 'API request failed' });
-      expect(result[0].pairedItem).toEqual({ item: 0 });
-    });
-  });
-});
-
-describe('HistoricalPnl Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        privateKey: 'test-private-key',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('getAllHistoricalPnl should fetch historical P&L data successfully', async () => {
-    const mockResponse = {
-      historicalPnl: [
-        {
-          id: 'pnl-1',
-          equity: '1000.50',
-          totalPnl: '50.25',
-          netTransfers: '0',
-          createdAt: '2023-01-01T00:00:00.000Z',
-        }
+  it('should get all API keys successfully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getApiKeys');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      apiKeys: [
+        { id: 'key1', createdAt: '2023-01-01' },
+        { id: 'key2', createdAt: '2023-01-02' }
       ]
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getAllHistoricalPnl';
-        case 'createdBeforeOrAt': return '2023-12-31T23:59:59.999Z';
-        case 'createdOnOrAfter': return '2023-01-01T00:00:00.000Z';
-        case 'limit': return 100;
-        default: return undefined;
-      }
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const items = [{ json: {} }];
-    const result = await executeHistoricalPnlOperations.call(mockExecuteFunctions, items);
+    const result = await executeApiKeyOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: expect.stringContaining('/v3/historical-pnl'),
-        headers: expect.objectContaining({
-          'DYDX-API-KEY': 'test-api-key',
-          'DYDX-SIGNATURE': expect.any(String),
-          'DYDX-TIMESTAMP': expect.any(String),
-          'DYDX-PASSPHRASE': 'test-passphrase',
-        }),
-      })
-    );
+    expect(result[0].json.apiKeys).toHaveLength(2);
   });
 
-  test('getHistoricalPnl should fetch specific P&L record successfully', async () => {
-    const mockResponse = {
-      historicalPnl: {
-        id: 'pnl-123',
-        equity: '2000.75',
-        totalPnl: '100.50',
-        netTransfers: '500.00',
-        createdAt: '2023-01-15T12:00:00.000Z',
-      }
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getHistoricalPnl';
-        case 'id': return 'pnl-123';
-        default: return undefined;
-      }
+  it('should delete API key successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('deleteApiKey')
+      .mockReturnValueOnce('key-to-delete-123');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      success: true,
+      message: 'API key deleted successfully'
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const items = [{ json: {} }];
-    const result = await executeHistoricalPnlOperations.call(mockExecuteFunctions, items);
+    const result = await executeApiKeyOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.dydx.exchange/v3/historical-pnl/pnl-123',
-        headers: expect.objectContaining({
-          'DYDX-API-KEY': 'test-api-key',
-          'DYDX-SIGNATURE': expect.any(String),
-        }),
-      })
-    );
+    expect(result[0].json.success).toBe(true);
   });
 
-  test('should handle API errors gracefully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getHistoricalPnl';
-        case 'id': return 'invalid-id';
-        default: return undefined;
-      }
-    });
-
-    const apiError = new Error('P&L record not found');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-    const items = [{ json: {} }];
-
-    await expect(
-      executeHistoricalPnlOperations.call(mockExecuteFunctions, items)
-    ).rejects.toThrow('P&L record not found');
-  });
-
-  test('should continue on fail when configured', async () => {
+  it('should handle API errors gracefully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('createApiKey');
+    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API rate limit exceeded'));
     mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-      switch (paramName) {
-        case 'operation': return 'getHistoricalPnl';
-        case 'id': return 'invalid-id';
-        default: return undefined;
-      }
-    });
 
-    const apiError = new Error('Network error');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
-
-    const items = [{ json: {} }];
-    const result = await executeHistoricalPnlOperations.call(mockExecuteFunctions, items);
+    const result = await executeApiKeyOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual({ error: 'Network error' });
-  });
-});
-
-describe('TradingRewards Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        apiSecret: 'test-api-secret',
-        passphrase: 'test-passphrase',
-        baseUrl: 'https://api.dydx.exchange',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getTradingRewards', () => {
-    it('should get trading rewards data successfully', async () => {
-      const mockResponse = {
-        rewards: [
-          {
-            address: '0x123...',
-            weight: '100.50',
-            epoch: 1,
-          }
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'getTradingRewards';
-        if (param === 'epoch') return 1;
-        return undefined;
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeTradingRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: 'https://api.dydx.exchange/v3/rewards/weight?epoch=1',
-        })
-      );
-    });
-
-    it('should handle API errors', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'getTradingRewards';
-        if (param === 'epoch') return 1;
-        return undefined;
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('API Error')
-      );
-
-      await expect(
-        executeTradingRewardsOperations.call(mockExecuteFunctions, [{ json: {} }])
-      ).rejects.toThrow('API Error');
-    });
-  });
-
-  describe('getTradingRewardsByAddress', () => {
-    it('should get trading rewards by address successfully', async () => {
-      const mockResponse = {
-        address: '0x123456789abcdef',
-        rewards: {
-          weight: '250.75',
-          epoch: 2,
-        },
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'getTradingRewardsByAddress';
-        if (param === 'address') return '0x123456789abcdef';
-        if (param === 'epoch') return 2;
-        return undefined;
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeTradingRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: 'https://api.dydx.exchange/v3/rewards/weight/0x123456789abcdef?epoch=2',
-        })
-      );
-    });
-
-    it('should handle continue on fail', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        if (param === 'operation') return 'getTradingRewardsByAddress';
-        if (param === 'address') return '0x123456789abcdef';
-        return undefined;
-      });
-
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-        new Error('Network Error')
-      );
-
-      const result = await executeTradingRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json.error).toBe('Network Error');
-    });
-  });
-});
-
-describe('LiquidityProviderRewards Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        secret: 'test-secret',
-        baseUrl: 'https://api.dydx.exchange/v3',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  describe('getLiquidityProviderRewards', () => {
-    it('should get LP rewards successfully', async () => {
-      const mockResponse = {
-        liquidityProviderRewards: [
-          {
-            address: '0x123...',
-            epoch: 1,
-            amount: '100.5',
-            token: 'DYDX'
-          }
-        ]
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getLiquidityProviderRewards';
-          case 'epoch': return 1;
-          default: return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeLiquidityProviderRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/liquidity-provider-rewards?epoch=1'),
-        })
-      );
-    });
-
-    it('should handle errors when getting LP rewards', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getLiquidityProviderRewards';
-          case 'epoch': return 1;
-          default: return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
-      mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-      const result = await executeLiquidityProviderRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json.error).toBe('API Error');
-    });
-  });
-
-  describe('getLiquidityProviderRewardsByAddress', () => {
-    it('should get LP rewards by address successfully', async () => {
-      const mockResponse = {
-        liquidityProviderRewards: {
-          address: '0x123...',
-          epoch: 1,
-          amount: '100.5',
-          token: 'DYDX'
-        }
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getLiquidityProviderRewardsByAddress';
-          case 'address': return '0x123...';
-          case 'epoch': return 1;
-          default: return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeLiquidityProviderRewardsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }]
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'GET',
-          url: expect.stringContaining('/liquidity-provider-rewards/0x123...?epoch=1'),
-        })
-      );
-    });
-
-    it('should throw error when address is missing', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string) => {
-        switch (paramName) {
-          case 'operation': return 'getLiquidityProviderRewardsByAddress';
-          case 'address': return '';
-          case 'epoch': return 1;
-          default: return undefined;
-        }
-      });
-
-      await expect(
-        executeLiquidityProviderRewardsOperations.call(
-          mockExecuteFunctions,
-          [{ json: {} }]
-        )
-      ).rejects.toThrow('Address is required');
-    });
+    expect(result[0].json.error).toBe('API rate limit exceeded');
   });
 });
 });
